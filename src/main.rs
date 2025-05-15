@@ -1,5 +1,6 @@
 use clap::{Parser, Subcommand};
 use database::User;
+use dialoguer::{Select, theme::ColorfulTheme};
 use rusqlite::Connection;
 use std::io::{self, Write};
 mod database;
@@ -17,7 +18,7 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     Add,
-    Remove { name: String },
+    Remove,
     List,
 }
 
@@ -47,8 +48,37 @@ fn main() {
 
             add_user(&conn, User { id: 0, name, email });
         }
-        Some(Commands::Remove { name }) => {
-            println!("Removing user: {}", name);
+        Some(Commands::Remove) => {
+            let users = get_all_users(&conn);
+            if users.is_empty() {
+                println!("No users to remove.");
+                return;
+            }
+
+            let max_name_len = users.iter().map(|u| u.name.len()).max().unwrap_or(0);
+
+            let display_items: Vec<String> = users
+                .iter()
+                .map(|u| format!("{:<width$} - {}", u.name, u.email, width = max_name_len))
+                .collect();
+
+            let selection = Select::with_theme(&ColorfulTheme::default())
+                .with_prompt("Select user to remove")
+                .items(&display_items)
+                .default(0)
+                .interact_opt()
+                .unwrap();
+
+            if let Some(index) = selection {
+                let selected_user = &users[index];
+                remove_user(&conn, selected_user.id);
+                println!(
+                    "User '{}' (ID: {}) removed.",
+                    selected_user.name, selected_user.id
+                );
+            } else {
+                println!("No user selected. Aborting removal.");
+            }
         }
         Some(Commands::List) => {
             list_users(&conn);
@@ -72,20 +102,22 @@ fn main() {
     println!("users length: {}", users.len());
 }
 
-fn list_users(db: &Connection) {
+fn get_all_users(db: &Connection) -> Vec<User> {
     let mut stmt = db.prepare("SELECT * FROM users").unwrap();
-    let users: Vec<User> = stmt
-        .query_map([], |row| {
-            Ok(User {
-                id: row.get(0)?,
-                name: row.get(1)?,
-                email: row.get(2)?,
-            })
+    stmt.query_map([], |row| {
+        Ok(User {
+            id: row.get(0)?,
+            name: row.get(1)?,
+            email: row.get(2)?,
         })
-        .unwrap()
-        .collect::<Result<Vec<User>, rusqlite::Error>>()
-        .unwrap();
+    })
+    .unwrap()
+    .collect::<Result<Vec<User>, rusqlite::Error>>()
+    .unwrap()
+}
 
+fn list_users(db: &Connection) {
+    let users = get_all_users(db);
     for user in users {
         println!("{}", user.name);
     }
@@ -96,4 +128,9 @@ fn add_user(db: &Connection, user: User) {
         .prepare("INSERT INTO users (name, email) VALUES (?, ?)")
         .unwrap();
     stmt.execute([user.name, user.email]).unwrap();
+}
+
+fn remove_user(db: &Connection, id: i32) {
+    let mut stmt = db.prepare("DELETE FROM users WHERE id = ?").unwrap();
+    stmt.execute([id]).unwrap();
 }
