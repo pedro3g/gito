@@ -15,8 +15,6 @@ fn get_db_path() -> PathBuf {
         fs::create_dir_all(data_dir).expect("Failed to create data directory");
         data_dir.join("gito.db")
     } else {
-        // Fallback to current directory if ProjectDirs can't be determined
-        // Or handle this error more gracefully depending on requirements
         eprintln!("Warning: Could not determine standard data directory. Using ./gito.db");
         PathBuf::from("gito.db")
     }
@@ -28,8 +26,7 @@ pub fn init_db() -> Connection {
     let conn =
         Connection::open(&db_path).expect(&format!("Failed to open database at {:?}", db_path));
 
-    // execute migrations
-    const SCHEMA_SQL: &str = include_str!("db/schema.sql"); // Embed schema at compile time
+    const SCHEMA_SQL: &str = include_str!("db/schema.sql");
     conn.execute_batch(SCHEMA_SQL).unwrap();
 
     conn

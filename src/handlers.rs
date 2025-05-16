@@ -92,7 +92,7 @@ pub fn handle_select(conn: &Connection) {
 
     if let Some(index) = selection {
         let selected_user = &users[index];
-        database::select_user(conn, selected_user.id); // Assuming this still makes sense, or if it needs adjustment for global config
+        database::select_user(conn, selected_user.id);
 
         Command::new("git")
             .arg("config")

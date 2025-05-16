@@ -2,13 +2,14 @@ name: Rust Build
 
 on:
     push:
-        branches: ["main", "master"] # Added master as it is sometimes used
+        branches: ["main"]
+        tags:
+            - "v*"
     pull_request:
-        branches: ["main", "master"]
+        branches: ["main"]
 
 env:
     CARGO_TERM_COLOR: always
-    # BINARY_NAME is now defined in Makefile, but can be kept for other uses if any
 
 jobs:
     build:
@@ -16,7 +17,7 @@ jobs:
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
-                include: # More explicit include matrix
+                include:
                     - os: ubuntu-latest
                       target_triple: x86_64-unknown-linux-gnu
                       make_target: build-linux-amd64
@@ -44,7 +45,7 @@ jobs:
               uses: actions-rs/toolchain@v1
               with:
                   toolchain: stable
-                  target: ${{ matrix.target_triple }} # Ensure the specific target is available for cargo
+                  target: ${{ matrix.target_triple }}
                   override: true
 
             - name: Install make (for Windows runners)
@@ -60,4 +61,30 @@ jobs:
               with:
                   name: ${{ matrix.artifact_name }}
                   path: ${{ matrix.binary_path }}
-                  if-no-files-found: error # Fails the workflow if the binary is not found
+                  if-no-files-found: error
+
+    release:
+        name: Create GitHub Release
+        runs-on: ubuntu-latest
+        if: startsWith(github.ref, 'refs/tags/')
+        needs: build
+        permissions:
+            contents: write
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Download all build artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  path: artifacts
+
+            - name: Create Release and Upload Assets
+              uses: softprops/action-gh-release@v2
+              with:
+                  files: |
+                      artifacts/gito-linux-amd64/gito
+                      artifacts/gito-macos-amd64/gito
+                      artifacts/gito-windows-amd64.exe/gito.exe
+              env:
+                  GITHUB_TOKEN: ${{ github.token }}
