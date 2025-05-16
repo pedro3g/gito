@@ -82,13 +82,12 @@ jobs:
               with:
                   fetch-depth: 0
 
-            - name: Extract tag (if PR from release branch)
-              if: github.event_name == 'pull_request' && github.head_ref == 'release'
+            - name: Extract version from Cargo.toml
+              id: extract_version
               run: |
-                  # Pega a tag diretamente
-                  TAG=$(git describe --tags --abbrev=0)
-                  echo "RELEASE_TAG=$TAG" >> $GITHUB_ENV
-                  echo "Using tag: $TAG"
+                  VERSION=$(grep -m1 "version" Cargo.toml | cut -d '"' -f2)
+                  echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+                  echo "Extracted version: $VERSION"
 
             - name: Download all build artifacts
               uses: actions/download-artifact@v4
@@ -116,6 +115,6 @@ jobs:
                       release/gito-macos-amd64
                       release/gito-macos-arm64
                       release/gito-windows-amd64.exe
-                  tag_name: ${{ github.event_name == 'pull_request' && env.RELEASE_TAG || github.ref_name }}
+                  tag_name: v${{ steps.extract_version.outputs.VERSION }}
               env:
                   GITHUB_TOKEN: ${{ github.token }}
