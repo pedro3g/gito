@@ -3,6 +3,8 @@ use database::User;
 use dialoguer::{Select, theme::ColorfulTheme};
 use rusqlite::Connection;
 use std::io::{self, Write};
+use std::process::Command;
+
 mod database;
 
 #[derive(Parser)]
@@ -20,6 +22,7 @@ enum Commands {
     Add,
     Remove,
     List,
+    Select,
 }
 
 fn main() {
@@ -83,7 +86,59 @@ fn main() {
         Some(Commands::List) => {
             list_users(&conn);
         }
-        None => {}
+        Some(Commands::Select) => {
+            let users = get_all_users(&conn);
+            if users.is_empty() {
+                println!("No users to select.");
+                return;
+            }
+
+            let max_name_len = users.iter().map(|u| u.name.len()).max().unwrap_or(0);
+
+            let display_items: Vec<String> = users
+                .iter()
+                .map(|u| format!("{:<width$} - {}", u.name, u.email, width = max_name_len))
+                .collect();
+
+            let selection = Select::with_theme(&ColorfulTheme::default())
+                .with_prompt("Select user")
+                .items(&display_items)
+                .default(0)
+                .interact_opt()
+                .unwrap();
+
+            if let Some(index) = selection {
+                let selected_user = &users[index];
+                select_user(&conn, selected_user.id);
+
+                Command::new("git")
+                    .arg("config")
+                    .arg("--global")
+                    .arg("user.name")
+                    .arg(&selected_user.name)
+                    .output()
+                    .unwrap();
+
+                Command::new("git")
+                    .arg("config")
+                    .arg("--global")
+                    .arg("user.email")
+                    .arg(&selected_user.email)
+                    .output()
+                    .unwrap();
+
+                println!("Selected user: {}", selected_user.name);
+            } else {
+                println!("No user selected. Aborting selection.");
+            }
+        }
+        None => {
+            println!("Available commands:");
+            println!("add - Add a new user");
+            println!("remove - Remove a user");
+            println!("list - List all users");
+            println!("select - Select a user");
+        }
     }
 
     let mut stmt = conn.prepare("SELECT * FROM users").unwrap();
@@ -132,5 +187,12 @@ fn add_user(db: &Connection, user: User) {
 
 fn remove_user(db: &Connection, id: i32) {
     let mut stmt = db.prepare("DELETE FROM users WHERE id = ?").unwrap();
+    stmt.execute([id]).unwrap();
+}
+
+fn select_user(db: &Connection, id: i32) {
+    let mut stmt = db
+        .prepare("UPDATE users SET selected = 1 WHERE id = ?")
+        .unwrap();
     stmt.execute([id]).unwrap();
 }
