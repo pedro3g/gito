@@ -1,6 +1,6 @@
 # gito
 
-Git organization and repository management tool
+A simple way to manage local git users
 
 ## Installation
 
