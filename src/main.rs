@@ -3,17 +3,11 @@ use clap::{Parser, Subcommand};
 mod database;
 mod handlers;
 
-const NAME: &str = "gito";
-const VERSION: &str = "0.1.0";
-const AUTHORS: &str = "Pedro Henrique <opedro3g@gmail.com>";
-const ABOUT: &str = "A simple way to manage local git users";
-
 #[derive(Parser)]
-#[command(name = NAME)]
-#[command(version = VERSION)]
-#[command(about = ABOUT)]
-#[command(author = AUTHORS)]
-
+#[command(name = env!("CARGO_PKG_NAME"))]
+#[command(version = env!("CARGO_PKG_VERSION"))]
+#[command(about = env!("CARGO_PKG_DESCRIPTION"))]
+#[command(author = env!("CARGO_PKG_AUTHORS"))]
 struct Cli {
     #[command(subcommand)]
     command: Option<Commands>,
@@ -47,9 +41,14 @@ fn main() {
             handlers::handle_select(&conn);
         }
         None => {
-            println!("{} {} - {}\n", NAME, VERSION, AUTHORS);
-            println!("{}", ABOUT);
-            println!("Usage: {} [COMMAND]\n", NAME);
+            println!(
+                "{} {} - {}\n",
+                env!("CARGO_PKG_NAME"),
+                env!("CARGO_PKG_VERSION"),
+                env!("CARGO_PKG_AUTHORS")
+            );
+            println!("{}", env!("CARGO_PKG_DESCRIPTION"));
+            println!("Usage: {} [COMMAND]\n", env!("CARGO_PKG_NAME"));
             println!("Available commands:");
             println!("  add     Add a new user");
             println!("  remove  Remove a user");

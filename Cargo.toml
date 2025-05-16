@@ -1,6 +1,8 @@
 [package]
 name = "gito"
 version = "0.1.0"
+authors = ["Pedro Henrique <opedro3g@gmail.com>"]
+description = "A simple way to manage local git users"
 edition = "2024"
 
 [dependencies]
