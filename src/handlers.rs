@@ -42,10 +42,7 @@ pub fn handle_remove(conn: &Connection) {
     if let Some(index) = selection {
         let selected_user = &users[index];
         database::remove_user(conn, selected_user.id);
-        println!(
-            "User '{}' (ID: {}) removed.",
-            selected_user.name, selected_user.id
-        );
+        println!("User '{}' removed.", selected_user.name);
     } else {
         println!("No user selected. Aborting removal.");
     }
