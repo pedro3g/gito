@@ -85,8 +85,10 @@ jobs:
             - name: Extract tag (if PR from release branch)
               if: github.event_name == 'pull_request' && github.head_ref == 'release'
               run: |
-                  echo "RELEASE_TAG=$(git describe --tags --abbrev=0 origin/release)" >> $GITHUB_ENV
-                  echo "Using tag: $RELEASE_TAG"
+                  # Pega a tag diretamente
+                  TAG=$(git describe --tags --abbrev=0)
+                  echo "RELEASE_TAG=$TAG" >> $GITHUB_ENV
+                  echo "Using tag: $TAG"
 
             - name: Download all build artifacts
               uses: actions/download-artifact@v4
