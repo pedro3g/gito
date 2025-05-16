@@ -66,33 +66,9 @@ bash uninstall.sh
 
 ## Usage
 
-| Command | Description                                      |
-| ------- | ------------------------------------------------ |
-| `gito add`    | Add a new user                                   |
-| `gito remove` | Remove a user                                    |
-| `gito list`   | List all users                                   |
-| `gito select` | Select a user and set git config globally        |
-
-## Running from source
-
-To run gito directly from the source code without installing it, you'll need to have Rust installed on your system.
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/pedro3g/gito.git
-   cd gito
-   ```
-
-2. Run the project using cargo:
-   ```bash
-   cargo run -- <command>
-   ```
-   Replace `<command>` with one of the available commands: `add`, `remove`, `list`, or `select`.
-
-   For example:
-   ```bash
-   cargo run -- list
-   ```
+```
+# Command examples go here
+```
 
 ## License
 
