@@ -1,0 +1,63 @@
+name: Rust Build
+
+on:
+    push:
+        branches: ["main", "master"] # Added master as it is sometimes used
+    pull_request:
+        branches: ["main", "master"]
+
+env:
+    CARGO_TERM_COLOR: always
+    # BINARY_NAME is now defined in Makefile, but can be kept for other uses if any
+
+jobs:
+    build:
+        name: Build for ${{ matrix.os_target }}
+        runs-on: ${{ matrix.os }}
+        strategy:
+            matrix:
+                include: # More explicit include matrix
+                    - os: ubuntu-latest
+                      target_triple: x86_64-unknown-linux-gnu
+                      make_target: build-linux-amd64
+                      artifact_name: gito-linux-amd64
+                      binary_path: "target/x86_64-unknown-linux-gnu/release/gito"
+                      os_target: Linux-AMD64
+                    - os: macos-latest
+                      target_triple: x86_64-apple-darwin
+                      make_target: build-macos-amd64
+                      artifact_name: gito-macos-amd64
+                      binary_path: "target/x86_64-apple-darwin/release/gito"
+                      os_target: macOS-AMD64
+                    - os: windows-latest
+                      target_triple: x86_64-pc-windows-msvc
+                      make_target: build-windows-amd64
+                      artifact_name: gito-windows-amd64.exe
+                      binary_path: "target/x86_64-pc-windows-msvc/release/gito.exe"
+                      os_target: Windows-AMD64
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up Rust and add target
+              uses: actions-rs/toolchain@v1
+              with:
+                  toolchain: stable
+                  target: ${{ matrix.target_triple }} # Ensure the specific target is available for cargo
+                  override: true
+
+            - name: Install make (for Windows runners)
+              if: runner.os == 'Windows'
+              run: choco install make
+              shell: powershell
+
+            - name: Build with Makefile
+              run: make ${{ matrix.make_target }}
+
+            - name: Upload artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: ${{ matrix.artifact_name }}
+                  path: ${{ matrix.binary_path }}
+                  if-no-files-found: error # Fails the workflow if the binary is not found
