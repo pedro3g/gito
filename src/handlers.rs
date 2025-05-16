@@ -1,29 +1,21 @@
 use crate::database::{self, User};
-use dialoguer::{Select, theme::ColorfulTheme};
+use dialoguer::{Input, Select, theme::ColorfulTheme};
 use rusqlite::Connection;
-use std::io::{self, Write};
 use std::process::Command;
 
 pub fn handle_add(conn: &Connection) {
-    let mut name = String::new();
-    let mut email = String::new();
+    let name: String = Input::with_theme(&ColorfulTheme::default())
+        .with_prompt("Enter name")
+        .interact_text()
+        .unwrap();
 
-    print!("Enter name: ");
-    io::stdout().flush().unwrap();
-    io::stdin()
-        .read_line(&mut name)
-        .expect("Failed to read name");
-    let name = name.trim().to_string();
-
-    print!("Enter email: ");
-    io::stdout().flush().unwrap();
-    io::stdin()
-        .read_line(&mut email)
-        .expect("Failed to read email");
-    let email = email.trim().to_string();
+    let email: String = Input::with_theme(&ColorfulTheme::default())
+        .with_prompt("Enter email")
+        .interact_text()
+        .unwrap();
 
     database::add_user(conn, &User { id: 0, name, email });
-    println!("User added."); // Added a confirmation message
+    println!("User added.");
 }
 
 pub fn handle_remove(conn: &Connection) {
