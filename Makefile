@@ -23,9 +23,9 @@ LINUX_AMD64_BINARY_PATH := $(TARGET_DIR)/$(LINUX_AMD64_TARGET)/release/$(BINARY_
 MACOS_AMD64_TARGET := x86_64-apple-darwin
 MACOS_AMD64_BINARY_PATH := $(TARGET_DIR)/$(MACOS_AMD64_TARGET)/release/$(BINARY_NAME)
 
-# macOS ARM64 (Apple Silicon) - uncomment if needed and runners support it
-# MACOS_ARM64_TARGET := aarch64-apple-darwin
-# MACOS_ARM64_BINARY_PATH := $(TARGET_DIR)/$(MACOS_ARM64_TARGET)/release/$(BINARY_NAME)
+# macOS ARM64 (Apple Silicon)
+MACOS_ARM64_TARGET := aarch64-apple-darwin
+MACOS_ARM64_BINARY_PATH := $(TARGET_DIR)/$(MACOS_ARM64_TARGET)/release/$(BINARY_NAME)
 
 # Windows AMD64
 WINDOWS_AMD64_TARGET := x86_64-pc-windows-msvc
@@ -46,10 +46,10 @@ build-macos-amd64:
 	@cargo build --release --target $(MACOS_AMD64_TARGET)
 	@echo "macOS AMD64 build complete: $(MACOS_AMD64_BINARY_PATH)"
 
-# build-macos-arm64: # Uncomment if you add Apple Silicon support
-# 	@echo "Building for macOS ARM64 (target: $(MACOS_ARM64_TARGET))..."
-# 	@cargo build --release --target $(MACOS_ARM64_TARGET)
-# 	@echo "macOS ARM64 build complete: $(MACOS_ARM64_BINARY_PATH)"
+build-macos-arm64:
+	@echo "Building for macOS ARM64 (target: $(MACOS_ARM64_TARGET))..."
+	@cargo build --release --target $(MACOS_ARM64_TARGET)
+	@echo "macOS ARM64 build complete: $(MACOS_ARM64_BINARY_PATH)"
 
 build-windows-amd64:
 	@echo "Building for Windows AMD64 (target: $(WINDOWS_AMD64_TARGET))..."
@@ -60,7 +60,7 @@ build-all-cross:
 	@echo "Building all cross-compilation targets..."
 	$(MAKE) build-linux-amd64
 	$(MAKE) build-macos-amd64
-	# $(MAKE) build-macos-arm64 # Uncomment if needed
+	$(MAKE) build-macos-arm64
 	$(MAKE) build-windows-amd64
 	@echo "All cross-compilation builds complete."
 

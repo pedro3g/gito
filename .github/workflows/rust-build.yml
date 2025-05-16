@@ -30,6 +30,12 @@ jobs:
                       artifact_name: gito-macos-amd64
                       binary_path: "target/x86_64-apple-darwin/release/gito"
                       os_target: macOS-AMD64
+                    - os: macos-latest
+                      target_triple: aarch64-apple-darwin
+                      make_target: build-macos-arm64
+                      artifact_name: gito-macos-arm64
+                      binary_path: "target/aarch64-apple-darwin/release/gito"
+                      os_target: macOS-ARM64
                     - os: windows-latest
                       target_triple: x86_64-pc-windows-msvc
                       make_target: build-windows-amd64
@@ -85,6 +91,7 @@ jobs:
                   files: |
                       artifacts/gito-linux-amd64/gito
                       artifacts/gito-macos-amd64/gito
+                      artifacts/gito-macos-arm64/gito
                       artifacts/gito-windows-amd64.exe/gito.exe
               env:
                   GITHUB_TOKEN: ${{ github.token }}
