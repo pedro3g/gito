@@ -22,7 +22,6 @@ fn get_db_path() -> PathBuf {
 
 pub fn init_db() -> Connection {
     let db_path = get_db_path();
-    println!("Database path: {:?}", db_path);
     let conn =
         Connection::open(&db_path).expect(&format!("Failed to open database at {:?}", db_path));
 
