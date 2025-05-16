@@ -96,14 +96,24 @@ jobs:
             - name: Debug - List artifacts structure
               run: find artifacts -type f | sort
 
+            - name: Rename files for release
+              run: |
+                  mkdir -p release
+                  cp artifacts/gito-linux-amd64/gito release/gito-linux-amd64
+                  cp artifacts/gito-macos-amd64/gito release/gito-macos-amd64
+                  cp artifacts/gito-macos-arm64/gito release/gito-macos-arm64
+                  cp artifacts/gito-windows-amd64.exe/gito.exe release/gito-windows-amd64.exe
+                  chmod +x release/*
+                  ls -la release/
+
             - name: Create Release and Upload Assets
               uses: softprops/action-gh-release@v2
               with:
                   files: |
-                      artifacts/gito-linux-amd64/gito
-                      artifacts/gito-macos-amd64/gito
-                      artifacts/gito-macos-arm64/gito
-                      artifacts/gito-windows-amd64.exe/gito.exe
+                      release/gito-linux-amd64
+                      release/gito-macos-amd64
+                      release/gito-macos-arm64
+                      release/gito-windows-amd64.exe
                   tag_name: ${{ github.event_name == 'pull_request' && env.RELEASE_TAG || github.ref_name }}
               env:
                   GITHUB_TOKEN: ${{ github.token }}
