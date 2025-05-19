@@ -35,6 +35,59 @@ increment_version() {
     echo "$major.$minor.$patch"
 }
 
+# Function to generate changelog entries from commits
+generate_changelog_entry() {
+    local old_version=$1
+    local new_version=$2
+    local bump_type=$3
+    local commit_range=$4
+    local release_date=$(date +"%Y-%m-%d")
+    
+    echo "# Changelog"
+    echo ""
+    
+    if [ -f CHANGELOG.md ]; then
+        # Remove the first line (# Changelog) before appending the new content
+        tail -n +2 CHANGELOG.md
+    fi
+    
+    echo ""
+    echo "## [$new_version] - $release_date"
+    echo ""
+    
+    # Get commit messages and categorize them
+    if [ -n "$commit_range" ]; then
+        # Features
+        echo "### Added"
+        git log $commit_range --pretty=format:"- %s" | grep -E '^feat(\(.+\))?:' | sed 's/feat\(.*\): //' || echo "- No new features"
+        echo ""
+        
+        # Fixes
+        echo "### Fixed"
+        git log $commit_range --pretty=format:"- %s" | grep -E '^fix(\(.+\))?:' | sed 's/fix\(.*\): //' || echo "- No fixes"
+        echo ""
+        
+        # Other changes
+        echo "### Changed"
+        git log $commit_range --pretty=format:"- %s" | grep -E '^(refactor|style|perf|chore)(\(.+\))?:' | sed -E 's/(refactor|style|perf|chore)\(.*\): //' || echo "- No changes"
+        echo ""
+        
+        # Documentation
+        echo "### Documentation"
+        git log $commit_range --pretty=format:"- %s" | grep -E '^docs(\(.+\))?:' | sed 's/docs\(.*\): //' || echo "- No documentation changes"
+        
+        # If this is a major version, add a breaking changes section
+        if [ "$bump_type" = "major" ]; then
+            echo ""
+            echo "### BREAKING CHANGES"
+            git log $commit_range --pretty=format:"%b" | grep -A1 "BREAKING CHANGE:" | grep -v "^--$" || echo "- No explicit breaking changes documented"
+        fi
+    else
+        echo "### Added"
+        echo "- Initial release"
+    fi
+}
+
 # Get current version
 CURRENT_VERSION=$(get_current_version)
 echo "Current version: $CURRENT_VERSION"
@@ -106,9 +159,19 @@ sed "s/^version = .*/version = \"$NEW_VERSION\"/" Cargo.toml > $TMP_CARGO
 mv $TMP_CARGO Cargo.toml
 echo "Updated Cargo.toml to version $NEW_VERSION"
 
+# Update Cargo.lock
+echo "Updating Cargo.lock..."
+cargo update --package gito
+
+# Generate CHANGELOG.md
+echo "Generating CHANGELOG.md..."
+generate_changelog_entry "$CURRENT_VERSION" "$NEW_VERSION" "$BUMP_TYPE" "$COMMIT_RANGE" > CHANGELOG.md.new
+mv CHANGELOG.md.new CHANGELOG.md
+echo "CHANGELOG.md updated successfully."
+
 # Git commit and tag
 echo "Committing and tagging version $NEW_VERSION..."
-git add Cargo.toml
+git add Cargo.toml Cargo.lock CHANGELOG.md
 git commit -m "chore(release): bump version to $NEW_VERSION"
 git tag "v$NEW_VERSION"
 
@@ -116,7 +179,6 @@ echo "Pushing changes and tags..."
 # git push
 # git push --tags
 echo "Run 'git push && git push --tags' to push the changes and the new tag."
-
 
 echo "Version bump complete. New version is $NEW_VERSION."
 echo "Remember to push the commit and tag: git push && git push --tags" 
