@@ -1,0 +1,19 @@
+[package]
+name = "gito"
+version = "0.0.5"
+authors = ["Pedro Henrique <opedro3g@gmail.com>"]
+description = "A simple way to manage local git users"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.5.4", features = ["derive"] }
+rusqlite = { version = "0.31.0", features = ["bundled"] }
+dialoguer = "0.11.0"
+directories = "5.0"
+
+[profile.release]
+opt-level = 'z'
+lto = true
+codegen-units = 1
+panic = 'abort'
+strip = true
