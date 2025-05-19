@@ -116,11 +116,21 @@ jobs:
                     /^## \[/ { if (found) exit; }
                     { if (found) print; }
                   ' CHANGELOG.md)
-                  # Escape newlines for GitHub Actions output
-                  RELEASE_NOTES="${RELEASE_NOTES//'%'/'%25'}"
-                  RELEASE_NOTES="${RELEASE_NOTES//$'\n'/'%0A'}"
-                  RELEASE_NOTES="${RELEASE_NOTES//$'\r'/'%0D'}"
-                  echo "RELEASE_NOTES=${RELEASE_NOTES}" >> $GITHUB_OUTPUT
+
+                  # First, add a title to the release notes
+                  echo "# Release v${VERSION}" > release_notes.md
+                  echo "" >> release_notes.md
+
+                  # Then append the extracted content
+                  echo "$RELEASE_NOTES" >> release_notes.md
+
+                  # Add installation instructions
+                  echo "" >> release_notes.md
+                  echo "## Installation" >> release_notes.md
+                  echo "" >> release_notes.md
+                  echo "Download the appropriate binary for your system and place it in your PATH." >> release_notes.md
+
+                  echo "release_notes=release_notes.md" >> $GITHUB_OUTPUT
 
             - name: Create Release and Upload Assets
               uses: softprops/action-gh-release@v2
@@ -131,13 +141,6 @@ jobs:
                       release/gito-macos-arm64
                       release/gito-windows-amd64.exe
                   tag_name: v${{ steps.extract_version.outputs.VERSION }}
-                  body: |
-                      # Release v${{ steps.extract_version.outputs.VERSION }}
-
-                      ${{ steps.extract_release_notes.outputs.RELEASE_NOTES }}
-
-                      ## Installation
-
-                      Download the appropriate binary for your system and place it in your PATH.
+                  body_path: ${{ steps.extract_release_notes.outputs.release_notes }}
               env:
                   GITHUB_TOKEN: ${{ github.token }}

@@ -68,54 +68,33 @@ Invoke-WebRequest -Uri https://raw.githubusercontent.com/pedro3g/gito/main/unins
 
 ## Usage
 
-gito is a command-line tool to manage multiple Git user profiles.
+| Command | Description                                      |
+| ------- | ------------------------------------------------ |
+| `gito add`    | Add a new user                                   |
+| `gito remove` | Remove a user                                    |
+| `gito list`   | List all users                                   |
+| `gito select` | Select a user and set git config globally        |
 
-```bash
-gito <COMMAND>
-```
+## Running from source
 
-**Available commands:**
+To run gito directly from the source code without installing it, you'll need to have Rust installed on your system.
 
-*   `gito add`
-    *   Prompts you to add a new user profile, asking for a name and email.
-*   `gito remove`
-    *   Lists the existing user profiles and prompts you to select one to remove.
-*   `gito list`
-    *   Displays all saved user profiles with their associated names and emails.
-*   `gito select`
-    *   Lists the existing user profiles and prompts you to select one. The selected user's git `user.name` and `user.email` will be set globally.
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/pedro3g/gito.git
+   cd gito
+   ```
 
-If no command is provided, gito will display its name, version, author, and a brief description, followed by the list of available commands.
+2. Run the project using cargo:
+   ```bash
+   cargo run -- <command>
+   ```
+   Replace `<command>` with one of the available commands: `add`, `remove`, `list`, or `select`.
 
-## Running Locally
-
-To run gito locally for development or testing, you'll need to have Rust and Cargo installed. You can find installation instructions at [rust-lang.org](https://www.rust-lang.org/tools/install).
-
-Once Rust is set up, follow these steps:
-
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/pedro3g/gito.git
-    cd gito
-    ```
-
-2.  **Run the application:**
-    ```bash
-    cargo run
-    ```
-    This command will compile and run the `gito` executable. You can then use it as described in the [Usage](#usage) section. For example:
-    ```bash
-    cargo run -- add
-    cargo run -- list
-    ```
-    The `--` is used to separate arguments for `cargo run` from arguments for your program.
-
-3.  **Build for release (optional):**
-    If you want to build an optimized release version, use:
-    ```bash
-    cargo build --release
-    ```
-    The executable will be located at `target/release/gito` (or `target\release\gito.exe` on Windows).
+   For example:
+   ```bash
+   cargo run -- list
+   ```
 
 ## License
 
